@@ -1,43 +1,38 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import './index.css'
+import React, { useState } from "react";
+import axios from "axios";
+import "./index.css";
 
 function App() {
   const [data, setData] = useState({});
-  const [location, setLocation] = useState('');
+  const [location, setLocation] = useState("");
+  const [celciusTemp, setCelciusTemp] = useState('');
+  const textInput = document.getElementById('textInput');
 
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=imperial&appid=33da2b246bed5e5268e150e3a3088767`
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=imperial&appid=33da2b246bed5e5268e150e3a3088767`;
 
   const searchLocation = (event) => {
-    if(event.key === 'Enter'){
+    if (event.key === "Enter") {
       axios.get(url).then((response) => {
         setData(response.data);
-        // console.log(response.data);
-      })
-      setLocation('');
+      });
+      setLocation("");
+      setCelciusTemp('');
     }
-  } 
-  
-  function convertToCelcius(value){
-    return ((value) - 32) * 9/5;
+  };
+
+  function convertToCelcius(value) {
+    return ((value - 32) * 5) / 9;
   }
 
-  function myFunction(){
-    alert('hi')
-  }
-
-  return ( 
+  return (
     <div className="app">
       <div className="search">
-        {/* <p>{toCelcius(82)}</p> */}
-        {/* {  convertToCelcius(82)} */}   
-        
-        <input 
-          type='text' 
+        <input
+          type="text"
           value={location}
-          onChange={event => setLocation(event.target.value)}
+          onChange={(event) => setLocation(event.target.value)}
           onKeyDown={searchLocation}
-          placeholder='Enter Location'
+          placeholder="Enter Location"
         />
       </div>
       <div className="container">
@@ -52,51 +47,45 @@ function App() {
             {data.weather ? <p>{data.weather[0].main}</p> : null}
           </div>
 
-          {data.name != undefined &&
-          
-          <> 
+          {data.name != undefined && (
+            <>
+              <button
+                className="conversionBtn"
+                onClick={() => {
+                  const convertedTemp = convertToCelcius(
+                    data.main.temp
+                  ).toFixed();
+                  setCelciusTemp(convertedTemp);
+                }}
+              >
+                Convert to Celcius
+              </button>
 
-
-              {/* <button class="button" onClick={() => alert(data.main.temp) }>In Celcius</button> */}
-
-              {/* <button class="button" onClick={convertToCelcius(data.main.temp)}>In Celcius</button>         */}
-
-              <button className="conversionBtn" >In Celcius</button>        
-              <p id='rslt'></p>
-
-              {
-                window.addEventListener('DOMContentLoaded', (event) => {
-                  const el = document.getElementsByClassName('conversionBtn');
-
-                  if(el){
-                    el.addEventListener('click', function(event){
-                      document.getElementById("rslt").innerHTML = convertToCelcius(data.main.temp);
-                      // alert('hi');
-                    });
-                  }
-                })
-              }  
-          </> 
-          }
+              <p className='result'>{celciusTemp === '' ? '' : `${celciusTemp}°C`}</p>
+            </>
+          )}
         </div>
-        
-        {data.name != undefined &&
-            
+
+        {data.name != undefined && (
           <div className="bottom">
             <div className="feels">
-              {data.main ? <p className='bold'>{data.main.feels_like.toFixed()}°F</p> : null}
+              {data.main ? (
+                <p className="bold">{data.main.feels_like.toFixed()}°F</p>
+              ) : null}
               <p>Feels like</p>
             </div>
             <div className="humidity">
-              {data.main ? <p className='bold'>{data.main.humidity}%</p> : null}
+              {data.main ? <p className="bold">{data.main.humidity}%</p> : null}
               <p>Humidity</p>
             </div>
             <div className="wind">
-              {data.wind ? <p className='bold'>{data.wind.speed.toFixed()}MPH</p> : null}
+              {data.wind ? (
+                <p className="bold">{data.wind.speed.toFixed()}MPH</p>
+              ) : null}
               <p>Wind Speed</p>
             </div>
-          </div> 
-        }     
+          </div>
+        )}
       </div>
     </div>
   );
