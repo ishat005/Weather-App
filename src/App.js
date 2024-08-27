@@ -6,7 +6,6 @@ function App() {
   const [data, setData] = useState({});
   const [location, setLocation] = useState("");
   const [celciusTemp, setCelciusTemp] = useState('');
-  const textInput = document.getElementById('textInput');
 
   const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=imperial&appid=33da2b246bed5e5268e150e3a3088767`;
 
