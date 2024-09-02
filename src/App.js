@@ -1,88 +1,117 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
 import "./index.css";
 
 function App() {
-  const [data, setData] = useState({});
   const [location, setLocation] = useState("");
-  const [celciusTemp, setCelciusTemp] = useState('');
+  const [country, setCountry] = useState("");
+  const [weatherData, setWeatherData] = useState({});
 
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=imperial&appid=33da2b246bed5e5268e150e3a3088767`;
+  const [showConvertedTemp, setShowConvertedTemp] = useState(false);
+  const API_KEY = "33da2b246bed5e5268e150e3a3088767";
 
-  const searchLocation = (event) => {
-    if (event.key === "Enter") {
-      axios.get(url).then((response) => {
-        setData(response.data);
-      });
-      setLocation("");
-      setCelciusTemp('');
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "location") {
+      setLocation(value);
+    } else if (name === "country") {
+      setCountry(value);
     }
   };
 
-  function convertToCelcius(value) {
-    return ((value - 32) * 5) / 9;
-  }
+  useEffect(() => {
+    const fetchWeatherData = async () => {
+      if (location && country) {
+        const response = await fetch(
+          `http://api.openweathermap.org/data/2.5/weather?q=${location},${country}&units=imperial&appid=${API_KEY}`
+        );
+        const data = await response.json();
+        setWeatherData(data);
+      }
+    };
+    fetchWeatherData();
+  }, [location, country, API_KEY]);
+
+  const handleConvertClick = () => {
+    setShowConvertedTemp(true);
+  };
 
   return (
     <div className="app">
       <div className="search">
         <input
           type="text"
+          name="location"
           value={location}
-          onChange={(event) => setLocation(event.target.value)}
-          onKeyDown={searchLocation}
-          placeholder="Enter Location"
+          onChange={handleInputChange}
+          placeholder="Enter location"
+          className="search-location"
         />
-      </div>
-      <div className="container">
-        <div className="top">
-          <div className="location">
-            <p>{data.name}</p>
-          </div>
-          <div className="temp">
-            {data.main ? <h1>{data.main.temp.toFixed()}°F</h1> : null}
-          </div>
-          <div className="description">
-            {data.weather ? <p>{data.weather[0].main}</p> : null}
-          </div>
+        <input
+          type="text"
+          name="country"
+          value={country}
+          onChange={handleInputChange}
+          placeholder="Enter country code"
+          className="search-country"
+        />
+        {weatherData && weatherData.main && (
+          <div className="container">
+            <div className="top">
+              <div className="location">
+                <p>{weatherData.name}</p>
+              </div>
+              <div className="temp">
+                <h1>{weatherData.main?.temp.toFixed()}°F</h1>
+              </div>
+              <div className="description">
+                <p>{weatherData.weather?.[0]?.main}</p>
+              </div>
 
-          {data.name != undefined && (
-            <>
-              <button
-                className="conversionBtn"
-                onClick={() => {
-                  const convertedTemp = convertToCelcius(
-                    data.main.temp
-                  ).toFixed();
-                  setCelciusTemp(convertedTemp);
-                }}
-              >
-                Convert to Celcius
-              </button>
+              {weatherData.name != undefined && (
+                <>
+                  <button
+                    className="conversionBtn"
+                    onClick={handleConvertClick}
+                  >
+                    Convert to Celcius
+                  </button>
 
-              <p className='result'>{celciusTemp === '' ? '' : `${celciusTemp}°C`}</p>
-            </>
-          )}
-        </div>
+                  {showConvertedTemp && (
+                    <p className="convertedTemp">
+                      {" "}
+                      {(((weatherData.main.temp - 32) * 5) / 9).toFixed()}°C
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
 
-        {data.name != undefined && (
-          <div className="bottom">
-            <div className="feels">
-              {data.main ? (
-                <p className="bold">{data.main.feels_like.toFixed()}°F</p>
-              ) : null}
-              <p>Feels like</p>
-            </div>
-            <div className="humidity">
-              {data.main ? <p className="bold">{data.main.humidity}%</p> : null}
-              <p>Humidity</p>
-            </div>
-            <div className="wind">
-              {data.wind ? (
-                <p className="bold">{data.wind.speed.toFixed()}MPH</p>
-              ) : null}
-              <p>Wind Speed</p>
-            </div>
+            {weatherData.name != undefined && (
+              <div className="bottom">
+                <div className="feels">
+                  {weatherData.main ? (
+                    <p className="bold">
+                      {weatherData.main?.feels_like.toFixed()}°F
+                    </p>
+                  ) : null}
+                  <p>Feels like</p>
+                </div>
+                <div className="humidity">
+                  {weatherData.main ? (
+                    <p className="bold">{weatherData.main?.humidity}%</p>
+                  ) : null}
+                  <p>Humidity</p>
+                </div>
+                <div className="wind">
+                  {weatherData.wind ? (
+                    <p className="bold">
+                      {weatherData.wind?.speed.toFixed()}MPH
+                    </p>
+                  ) : null}
+                  <p>Wind Speed</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
